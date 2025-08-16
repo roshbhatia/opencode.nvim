@@ -154,4 +154,33 @@ function M.toggle()
   require("opencode.terminal").toggle()
 end
 
+---Capture a snapshot of the current buffer for diff detection.
+function M.capture_buffer()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local content = require("opencode.diff").capture_buffer_snapshot(bufnr)
+  if content then
+    vim.notify("Buffer snapshot captured", vim.log.levels.INFO, { title = "opencode" })
+  else
+    vim.notify("Failed to capture buffer snapshot", vim.log.levels.WARN, { title = "opencode" })
+  end
+end
+
+---Detect and display changes in the current buffer.
+function M.detect_changes()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local changes = require("opencode.diff").detect_buffer_changes(bufnr)
+
+  if changes then
+    vim.notify(
+      string.format("Changes detected in %s", vim.fn.fnamemodify(changes.filepath, ":t")),
+      vim.log.levels.INFO,
+      { title = "opencode" }
+    )
+
+    print(changes.diff)
+  else
+    vim.notify("No changes detected", vim.log.levels.INFO, { title = "opencode" })
+  end
+end
+
 return M
