@@ -67,6 +67,13 @@ function M.prompt(prompt)
     if require("opencode.config").options.auto_reload then
       require("opencode.reload").setup()
     end
+
+    -- Setup diff watcher for automatic diff detection
+    require("opencode.diff_watcher").setup()
+
+    -- Capture snapshots of all open buffers before sending prompt
+    -- This ensures we can detect changes made by opencode
+    require("opencode.diff_watcher").capture_all_snapshots()
     if result ~= sse_listening_port then
       require("opencode.client").sse_listen(result, function(response)
         vim.api.nvim_exec_autocmds("User", {
@@ -246,6 +253,32 @@ end
 ---Clear opencode-related entries from the quickfix list.
 function M.clear_quickfix()
   require("opencode.quickfix").clear_opencode_quickfix()
+end
+
+---Manually capture snapshots of all open buffers.
+---Useful for preparing diff detection before opencode operations.
+function M.capture_all_snapshots()
+  require("opencode.diff_watcher").capture_all_snapshots()
+end
+
+---Stop watching all buffers for changes and clear snapshots.
+---Useful for resetting diff detection state.
+function M.clear_all_snapshots()
+  require("opencode.diff_watcher").stop_watching_all()
+end
+
+---Get information about the current diff watching state.
+---@return table Watcher and snapshot information
+function M.get_diff_info()
+  local watcher_info = require("opencode.diff_watcher").get_watcher_info()
+  local snapshot_info = require("opencode.diff").get_snapshot_info()
+
+  return {
+    watcher = watcher_info,
+    snapshots = snapshot_info,
+    watched_count = watcher_info.total_watched,
+    snapshot_count = vim.tbl_count(snapshot_info),
+  }
 end
 
 return M
