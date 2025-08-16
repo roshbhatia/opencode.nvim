@@ -183,4 +183,52 @@ function M.detect_changes()
   end
 end
 
+---Review changes in the current buffer using diff view.
+---Creates a side-by-side diff interface for accepting/rejecting changes.
+function M.review_changes()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local changes = require("opencode.diff").detect_buffer_changes(bufnr)
+
+  if not changes then
+    vim.notify("No changes detected in current buffer", vim.log.levels.INFO, { title = "opencode" })
+    return
+  end
+
+  local diff_ui = require("opencode.diff_ui")
+
+  -- Check if there's already a diff session for this buffer
+  local existing_session = diff_ui.get_session_for_buffer(bufnr)
+  if existing_session then
+    vim.notify("Diff session already open for this buffer", vim.log.levels.WARN, { title = "opencode" })
+    return
+  end
+
+  -- Create diff view
+  local session = diff_ui.create_diff_view(changes)
+  if not session then
+    vim.notify("Failed to create diff view", vim.log.levels.ERROR, { title = "opencode" })
+    return
+  end
+
+  -- Open diff windows
+  local success = diff_ui.open_diff_windows(session)
+  if not success then
+    vim.notify("Failed to open diff windows", vim.log.levels.ERROR, { title = "opencode" })
+    diff_ui.close_diff_session(session)
+    return
+  end
+
+  -- Setup keymaps
+  diff_ui.setup_diff_keymaps(session)
+
+  vim.notify(
+    string.format(
+      "Diff view opened for %s. Use 'do'/'dp' to accept/reject hunks, 'q' to close.",
+      vim.fn.fnamemodify(changes.filepath, ":t")
+    ),
+    vim.log.levels.INFO,
+    { title = "opencode" }
+  )
+end
+
 return M
