@@ -172,6 +172,12 @@ function M.apply_all_changes(session)
   -- Apply to source buffer
   vim.api.nvim_buf_set_lines(session.source_buf, 0, -1, false, modified_lines)
 
+  -- Update quickfix list if auto_populate_quickfix is enabled
+  local config = require("opencode.config").options.diff
+  if config.auto_populate_quickfix then
+    require("opencode.quickfix").remove_buffer_from_quickfix(session.source_buf)
+  end
+
   vim.notify("Changes applied to source buffer", vim.log.levels.INFO, { title = "opencode" })
   M.close_diff_session(session)
 end

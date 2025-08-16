@@ -203,6 +203,12 @@ function M.review_changes()
     return
   end
 
+  -- Populate quickfix if enabled
+  local config = require("opencode.config").options.diff
+  if config.auto_populate_quickfix then
+    require("opencode.quickfix").populate_quickfix({ changes })
+  end
+
   -- Create diff view
   local session = diff_ui.create_diff_view(changes)
   if not session then
@@ -229,6 +235,17 @@ function M.review_changes()
     vim.log.levels.INFO,
     { title = "opencode" }
   )
+end
+
+---Populate quickfix list with all detected changes across open buffers.
+function M.populate_quickfix()
+  local all_changes = require("opencode.diff").get_all_changes()
+  require("opencode.quickfix").populate_quickfix(all_changes, { open_window = true })
+end
+
+---Clear opencode-related entries from the quickfix list.
+function M.clear_quickfix()
+  require("opencode.quickfix").clear_opencode_quickfix()
 end
 
 return M
