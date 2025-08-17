@@ -121,9 +121,17 @@ local defaults = {
   diff = {
     ---@class opencode.DiffConfig
     ---@field auto_open? boolean Automatically open diff view when changes are detected
-    ---@field auto_populate_quickfix? boolean Automatically populate quickfix list with detected changes
+    ---@field quickfix? opencode.QuickfixConfig Quickfix configuration
+    ---@field callback? function Custom diff function for integration with other plugins
     auto_open = false,
-    auto_populate_quickfix = true,
+    quickfix = {
+      ---@class opencode.QuickfixConfig
+      ---@field auto_populate? boolean Automatically populate quickfix list with detected changes
+      ---@field position? string Position command for quickfix window (e.g., "belowright", "topleft", "vertical")
+      auto_populate = true,
+      position = "belowright",
+    },
+    callback = nil,
   },
 }
 

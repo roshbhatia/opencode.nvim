@@ -199,6 +199,27 @@ function M.review_changes()
     return
   end
 
+  local config = require("opencode.config").options.diff
+
+  -- Check if user provided a custom diff callback
+  if config.callback and type(config.callback) == "function" then
+    local success, err = pcall(config.callback, changes)
+    if success then
+      -- Custom callback handled it successfully, populate quickfix after
+      if config.quickfix.auto_populate then
+        require("opencode.quickfix").populate_quickfix({ changes }, { open_window = true })
+      end
+      return
+    end
+    -- If it failed, fall back to built-in diff functionality
+    vim.notify(
+      string.format("Custom diff callback failed: %s. Falling back to built-in diff functionality", err),
+      vim.log.levels.WARN,
+      { title = "opencode" }
+    )
+  end
+
+  -- Built-in diff functionality
   local diff_ui = require("opencode.diff_ui")
 
   -- Check if there's already a diff session for this buffer
@@ -209,8 +230,7 @@ function M.review_changes()
   end
 
   -- Populate quickfix if enabled
-  local config = require("opencode.config").options.diff
-  if config.auto_populate_quickfix then
+  if config.quickfix.auto_populate then
     require("opencode.quickfix").populate_quickfix({ changes }, { open_window = true })
   end
 
@@ -228,7 +248,6 @@ function M.review_changes()
     diff_ui.close_diff_session(session)
     return
   end
-
 
   vim.notify(
     string.format(
@@ -276,5 +295,6 @@ function M.get_diff_info()
     snapshot_count = vim.tbl_count(snapshot_info),
   }
 end
+
 
 return M

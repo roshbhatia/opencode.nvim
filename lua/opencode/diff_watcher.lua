@@ -64,7 +64,7 @@ function M.handle_session_idle(event_data)
 
     if #all_changes > 0 then
       -- Auto-populate quickfix if enabled
-      if config.auto_populate_quickfix then
+      if config.quickfix.auto_populate then
         require("opencode.quickfix").populate_quickfix(all_changes, { open_window = true })
       end
 

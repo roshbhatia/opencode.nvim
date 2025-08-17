@@ -162,7 +162,9 @@ function M.populate_quickfix(changes, opts)
   -- Optionally open quickfix window
   if opts.open_window then
     vim.schedule(function()
-      vim.cmd("copen")
+      local config = require("opencode.config").options.diff
+      local position = config.quickfix.position or "belowright"
+      vim.cmd(position .. " copen")
     end)
   end
 end

@@ -71,12 +71,12 @@ function M.open_diff_windows(session)
 
   -- Save current window - this is where we want the diff to appear
   local target_win = vim.api.nvim_get_current_win()
-  
+
   -- Create the split layout: split current window, original left, modified right
   vim.cmd("vsplit")
-  
+
   -- After vsplit:
-  -- - Current window is the NEW left window 
+  -- - Current window is the NEW left window
   -- - target_win is now the right window
   local left_win = vim.api.nvim_get_current_win()
   local right_win = target_win
@@ -117,7 +117,6 @@ function M.open_diff_windows(session)
   return true
 end
 
-
 ---Apply current state of modified buffer back to source buffer
 ---@param session table Session info
 function M.apply_all_changes(session)
@@ -134,7 +133,7 @@ function M.apply_all_changes(session)
 
   -- Update quickfix list if auto_populate_quickfix is enabled
   local config = require("opencode.config").options.diff
-  if config.auto_populate_quickfix then
+  if config.quickfix.auto_populate then
     require("opencode.quickfix").remove_buffer_from_quickfix(session.source_buf)
   end
 
@@ -155,7 +154,6 @@ function M.close_diff_session(session)
   if not session then
     return
   end
-
 
   -- Close windows
   for _, win in pairs(session.windows or {}) do
