@@ -2,7 +2,7 @@
 
 Seamlessly integrate the [opencode](https://github.com/sst/opencode) AI assistant with Neovim.
 
-https://github.com/user-attachments/assets/4f074c86-6863-49b5-b1ff-dcd901a03e02
+<https://github.com/user-attachments/assets/4f074c86-6863-49b5-b1ff-dcd901a03e02>
 
 > [!NOTE]
 > Uses opencode's currently undocumented, likely unstable [API](https://github.com/sst/opencode/blob/dev/packages/opencode/src/server/server.ts).
@@ -16,6 +16,7 @@ https://github.com/user-attachments/assets/4f074c86-6863-49b5-b1ff-dcd901a03e02
 - Inject customizable editor context
 - Auto-reload edited buffers
 - Write and refine prompts quickly with completion, highlight, and normal-mode support
+- Review and manage opencode changes with side-by-side diff and quickfix integration
 
 ## 🕵️ Context
 
@@ -54,11 +55,14 @@ When your prompt contains placeholders, `opencode.nvim` will replace them with c
     { '<leader>op', function() require('opencode').select_prompt() end, desc = 'Select prompt', mode = { 'n', 'v', }, },
     { '<leader>on', function() require('opencode').command('session_new') end, desc = 'New session', },
     { '<leader>oy', function() require('opencode').command('messages_copy') end, desc = 'Copy last message', },
+    { '<leader>od', function() require('opencode').review_changes() end, desc = 'Review changes', },
+    { '<leader>oq', function() require('opencode').populate_quickfix() end, desc = 'Populate quickfix', },
     { '<S-C-u>',    function() require('opencode').command('messages_half_page_up') end, desc = 'Scroll messages up', },
     { '<S-C-d>',    function() require('opencode').command('messages_half_page_down') end, desc = 'Scroll messages down', },
   },
 }
 ```
+
 </details>
 
 <details>
@@ -78,6 +82,7 @@ programs.nixvim = {
   ];
 };
 ```
+
 </details>
 
 ## ⚙️ Configuration
@@ -137,6 +142,48 @@ Add custom contexts to `opts.contexts`. The below replaces `@grapple` with files
   }
 }
 ```
+
+### Diff & Change Review
+
+`opencode.nvim` automatically detects when opencode modifies files and offers several ways to review changes:
+
+```lua
+{
+  diff = {
+    auto_open = false, -- Automatically open diff view when changes detected
+    quickfix = {
+      auto_populate = true, -- Auto-populate quickfix list with changes
+      position = "belowright", -- Position for quickfix window
+    },
+    callback = nil, -- Custom diff function for integration with other plugins
+  },
+}
+```
+
+You can also integrate with your preferred diff tools by providing a custom callback that's executed after changes have been applied:
+
+```lua
+-- vim-fugitive integration
+{
+  diff = {
+    callback = function(changes)
+      vim.cmd('edit ' .. changes.filepath)
+      vim.cmd('Gdiffsplit')
+    end,
+  },
+}
+
+-- diffview.nvim integration
+{
+  diff = {
+    callback = function(changes)
+      local temp_file = vim.fn.tempname()
+      vim.fn.writefile(vim.split(changes.original_content, '\n'), temp_file)
+      require('diffview').open(temp_file, changes.filepath)
+    end,
+  },
+}
+
 
 ## ✍️ Completion
 
