@@ -50,11 +50,7 @@ function M.handle_file_edited(event_data)
     end)
   end
 
-  vim.notify(
-    string.format("File edited by opencode: %s", vim.fn.fnamemodify(edited_file, ":t")),
-    vim.log.levels.INFO,
-    { title = "opencode" }
-  )
+  -- File change will be detected when session goes idle
 end
 
 ---Handle session.idle SSE event (when opencode finishes responding)
@@ -67,15 +63,9 @@ function M.handle_session_idle(event_data)
     local all_changes = require("opencode.diff").get_all_changes()
 
     if #all_changes > 0 then
-      vim.notify(
-        string.format("Detected changes in %d buffer(s) after opencode session", #all_changes),
-        vim.log.levels.INFO,
-        { title = "opencode" }
-      )
-
       -- Auto-populate quickfix if enabled
       if config.auto_populate_quickfix then
-        require("opencode.quickfix").populate_quickfix(all_changes)
+        require("opencode.quickfix").populate_quickfix(all_changes, { open_window = true })
       end
 
       -- Auto-open diff view if enabled
@@ -135,13 +125,7 @@ function M.capture_all_snapshots()
     count = count + 1
   end
 
-  if count > 0 then
-    vim.notify(
-      string.format("Captured snapshots for %d buffer(s)", count),
-      vim.log.levels.DEBUG,
-      { title = "opencode" }
-    )
-  end
+  -- Snapshots captured silently
 end
 
 ---Stop watching a specific buffer

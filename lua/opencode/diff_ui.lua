@@ -69,17 +69,21 @@ function M.open_diff_windows(session)
     return false
   end
 
-  -- Save current window
-  local original_win = vim.api.nvim_get_current_win()
-
-  -- Create vertical split layout
+  -- Save current window - this is where we want the diff to appear
+  local target_win = vim.api.nvim_get_current_win()
+  
+  -- Create the split layout: split current window, original left, modified right
   vim.cmd("vsplit")
+  
+  -- After vsplit:
+  -- - Current window is the NEW left window 
+  -- - target_win is now the right window
   local left_win = vim.api.nvim_get_current_win()
-  local right_win = original_win
+  local right_win = target_win
 
-  -- Set buffers in windows
-  vim.api.nvim_win_set_buf(left_win, session.original_buf)
-  vim.api.nvim_win_set_buf(right_win, session.modified_buf)
+  -- Set buffers in windows (original left, modified right)
+  vim.api.nvim_win_set_buf(left_win, session.modified_buf)
+  vim.api.nvim_win_set_buf(right_win, session.original_buf)
 
   -- Store window references
   session.windows.left = left_win
@@ -113,50 +117,6 @@ function M.open_diff_windows(session)
   return true
 end
 
----Setup keymaps for diff operations in the current buffer
----@param session table Session info
-function M.setup_diff_keymaps(session)
-  if not session then
-    return
-  end
-
-  local config = require("opencode.config").options.diff
-  local keymaps = config.keymaps
-
-  -- Only set keymaps in the modified buffer window
-  local modified_win = session.windows.right
-  if not modified_win or not vim.api.nvim_win_is_valid(modified_win) then
-    return
-  end
-
-  vim.api.nvim_win_call(modified_win, function()
-    local buf = session.modified_buf
-    local opts = { buffer = buf, silent = true, nowait = true }
-
-    -- Accept hunk (do - diff obtain from left/original)
-    vim.keymap.set("n", keymaps.accept_hunk, "do", opts)
-
-    -- Reject hunk (dp - diff put to left/original)
-    vim.keymap.set("n", keymaps.reject_hunk, "dp", opts)
-
-    -- Navigation
-    vim.keymap.set("n", keymaps.next_hunk, "]c", opts)
-    vim.keymap.set("n", keymaps.prev_hunk, "[c", opts)
-
-    -- Custom keymaps for applying changes back to source
-    vim.keymap.set("n", "<leader>da", function()
-      M.apply_all_changes(session)
-    end, vim.tbl_extend("force", opts, { desc = "Apply all changes to source buffer" }))
-
-    vim.keymap.set("n", "<leader>dr", function()
-      M.reject_all_changes(session)
-    end, vim.tbl_extend("force", opts, { desc = "Reject all changes" }))
-
-    vim.keymap.set("n", "q", function()
-      M.close_diff_session(session)
-    end, vim.tbl_extend("force", opts, { desc = "Close diff session" }))
-  end)
-end
 
 ---Apply current state of modified buffer back to source buffer
 ---@param session table Session info
@@ -195,6 +155,7 @@ function M.close_diff_session(session)
   if not session then
     return
   end
+
 
   -- Close windows
   for _, win in pairs(session.windows or {}) do

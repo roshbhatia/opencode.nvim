@@ -122,26 +122,8 @@ local defaults = {
     ---@class opencode.DiffConfig
     ---@field auto_open? boolean Automatically open diff view when changes are detected
     ---@field auto_populate_quickfix? boolean Automatically populate quickfix list with detected changes
-    ---@field keymaps? opencode.DiffKeymaps Keymaps for diff functionality
     auto_open = false,
     auto_populate_quickfix = true,
-    keymaps = {
-      ---@class opencode.DiffKeymaps
-      ---@field review_changes? string Keymap to manually review changes
-      ---@field populate_quickfix? string Keymap to populate quickfix with all changes
-      ---@field clear_quickfix? string Keymap to clear opencode entries from quickfix
-      ---@field accept_hunk? string Keymap to accept current diff hunk (uses vim default 'do')
-      ---@field reject_hunk? string Keymap to reject current diff hunk (uses vim default 'dp')
-      ---@field next_hunk? string Keymap to go to next diff hunk (uses vim default ']c')
-      ---@field prev_hunk? string Keymap to go to previous diff hunk (uses vim default '[c')
-      review_changes = "<leader>od",
-      populate_quickfix = "<leader>oq",
-      clear_quickfix = "<leader>oQ",
-      accept_hunk = "do",
-      reject_hunk = "dp",
-      next_hunk = "]c",
-      prev_hunk = "[c",
-    },
   },
 }
 

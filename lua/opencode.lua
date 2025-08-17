@@ -165,9 +165,7 @@ end
 function M.capture_buffer()
   local bufnr = vim.api.nvim_get_current_buf()
   local content = require("opencode.diff").capture_buffer_snapshot(bufnr)
-  if content then
-    vim.notify("Buffer snapshot captured", vim.log.levels.INFO, { title = "opencode" })
-  else
+  if not content then
     vim.notify("Failed to capture buffer snapshot", vim.log.levels.WARN, { title = "opencode" })
   end
 end
@@ -213,7 +211,7 @@ function M.review_changes()
   -- Populate quickfix if enabled
   local config = require("opencode.config").options.diff
   if config.auto_populate_quickfix then
-    require("opencode.quickfix").populate_quickfix({ changes })
+    require("opencode.quickfix").populate_quickfix({ changes }, { open_window = true })
   end
 
   -- Create diff view
@@ -231,8 +229,6 @@ function M.review_changes()
     return
   end
 
-  -- Setup keymaps
-  diff_ui.setup_diff_keymaps(session)
 
   vim.notify(
     string.format(

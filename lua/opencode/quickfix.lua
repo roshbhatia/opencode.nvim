@@ -157,15 +157,13 @@ function M.populate_quickfix(changes, opts)
   local title = string.format("opencode changes (%d hunks across %d files)", #qf_entries, #changes)
   vim.fn.setqflist({}, action, { title = title })
 
-  vim.notify(
-    string.format("Populated quickfix with %d change hunks", #qf_entries),
-    vim.log.levels.INFO,
-    { title = "opencode" }
-  )
+  -- Quickfix populated silently
 
   -- Optionally open quickfix window
   if opts.open_window then
-    vim.cmd("copen")
+    vim.schedule(function()
+      vim.cmd("copen")
+    end)
   end
 end
 
